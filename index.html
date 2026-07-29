@@ -99,7 +99,6 @@
 
     <!-- 2. USER DASHBOARD VIEW -->
     <div id="userView" class="dashboard-layout">
-        <!-- Sidebar Navigation -->
         <aside class="sidebar-menu">
             <div style="padding: 10px 8px 16px; border-bottom: 1px solid var(--border-color); margin-bottom: 10px;">
                 <h3 style="font-size: 16px; color: #fff;"><i class="fas fa-user" style="color: var(--accent-cyan);"></i> بوابة المستخدم</h3>
@@ -112,7 +111,6 @@
             <button class="sidebar-btn" onclick="switchTab('user', 'userSettings', this)"><i class="fas fa-cog"></i> إعدادات الحساب</button>
         </aside>
 
-        <!-- Main Content Area -->
         <main class="dashboard-content">
             <!-- User Summary Tab -->
             <div id="userSummary" class="tab-pane active">
@@ -130,19 +128,19 @@
                         <div class="stat-icon" style="background: rgba(127, 83, 172, 0.15); color: var(--accent-purple);"><i class="fas fa-shopping-bag"></i></div>
                         <div class="stat-info">
                             <h4>إجمالي الطلبات</h4>
-                            <strong>14 طلب</strong>
+                            <strong id="userTotalOrdersCount">0 طلب</strong>
                         </div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon" style="background: rgba(0, 230, 118, 0.15); color: var(--accent-green);"><i class="fas fa-check-circle"></i></div>
                         <div class="stat-info">
                             <h4>الطلبات المكتملة</h4>
-                            <strong>13 طلب</strong>
+                            <strong id="userCompletedOrdersCount">0 طلب</strong>
                         </div>
                     </div>
                 </div>
 
-                <h4 style="font-size: 16px; margin: 24px 0 12px; color: #fff;">أحدث الطلبات المكتملة</h4>
+                <h4 style="font-size: 16px; margin: 24px 0 12px; color: #fff;">أحدث الطلبات الخاصة بك</h4>
                 <div class="custom-table-wrapper">
                     <table class="custom-table">
                         <thead>
@@ -184,16 +182,43 @@
                     </div>
                 </div>
 
-                <div style="background: rgba(11, 15, 25, 0.7); padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                <div style="background: rgba(11, 15, 25, 0.7); padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 24px;">
+                    <div class="form-group">
+                        <label class="form-label">طريقة الدفع المختارة</label>
+                        <select id="depositMethodSelect" class="form-select">
+                            <option value="شام كاش / تحويل محلي">شام كاش / تحويل محلي</option>
+                            <option value="USDT TRC-20">USDT TRC-20 (عملات رقمية)</option>
+                            <option value="Paysera / Visa">Paysera / Visa Credit</option>
+                        </select>
+                    </div>
                     <div class="form-group">
                         <label class="form-label">المبلغ المراد شحنه ($ USD)</label>
-                        <input type="number" id="depositAmount" class="form-input" placeholder="أدخل المبلغ بالدولار..." value="50" />
+                        <input type="number" id="depositAmount" class="form-input" placeholder="أدخل المبلغ بالدولار..." value="50" min="1" />
                     </div>
                     <div class="form-group">
-                        <label class="form-label">رقم العملية / الحوالة</label>
-                        <input type="text" id="depositTxId" class="form-input" placeholder="أدخل رقم الإشعار أو Hash العملية..." />
+                        <label class="form-label">رقم العملية / الحوالة / Transaction ID</label>
+                        <input type="text" id="depositTxId" class="form-input" placeholder="أدخل رقم الإشعار أو Hash العملية..." required />
                     </div>
-                    <button class="btn-btn btn-primary" onclick="processUserDeposit()"><i class="fas fa-paper-plane"></i> إرسال طلب الشحن للمراجعة</button>
+                    <button class="btn-btn btn-primary" onclick="submitDepositRequest()"><i class="fas fa-paper-plane"></i> إرسال طلب الشحن للمراجعة والاعتماد</button>
+                </div>
+
+                <h4 style="font-size: 16px; margin-bottom: 12px; color: #fff;">سجل عمليات الإيداع الخاصة بك</h4>
+                <div class="custom-table-wrapper">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th># المعرف</th>
+                                <th>طريقة الدفع</th>
+                                <th>المبلغ</th>
+                                <th>رقم الإشعار</th>
+                                <th>التاريخ</th>
+                                <th>الحالة</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userDepositsTable">
+                            <!-- Dynamic -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
@@ -226,13 +251,31 @@
                     <h4 style="font-size: 15px; margin-bottom: 12px;">فتح تذكرة دعم جديدة</h4>
                     <div class="form-group">
                         <label class="form-label">عنوان التذكرة</label>
-                        <input type="text" class="form-input" placeholder="مثال: استفسار حول طلب #102..." />
+                        <input type="text" id="ticketSubjectInput" class="form-input" placeholder="مثال: استفسار حول طلب #102..." required />
                     </div>
                     <div class="form-group">
                         <label class="form-label">تفاصيل المشكلة</label>
-                        <textarea class="form-textarea" rows="3" placeholder="اكتب تفاصيل التذكرة هنا..."></textarea>
+                        <textarea id="ticketBodyInput" class="form-textarea" rows="3" placeholder="اكتب تفاصيل التذكرة هنا..." required></textarea>
                     </div>
-                    <button class="btn-btn btn-primary" onclick="alert('تم فتح تذكرة الدعم بنجاح! سيتم الرد عليك في أقرب وقت.')"><i class="fas fa-plus"></i> إرسال التذكرة</button>
+                    <button class="btn-btn btn-primary" onclick="submitSupportTicket()"><i class="fas fa-plus"></i> إرسال التذكرة للإدارة</button>
+                </div>
+
+                <h4 style="font-size: 16px; margin-bottom: 12px; color: #fff;">التذاكر الخاصة بك</h4>
+                <div class="custom-table-wrapper">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th># التذكرة</th>
+                                <th>الموضوع</th>
+                                <th>التاريخ</th>
+                                <th>الحالة</th>
+                                <th>رد الإدارة</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userTicketsTable">
+                            <!-- Dynamic -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
@@ -254,7 +297,6 @@
 
     <!-- 3. ADMIN DASHBOARD VIEW (ADMIN ONLY) -->
     <div id="adminView" class="dashboard-layout">
-        <!-- Sidebar Navigation -->
         <aside class="sidebar-menu">
             <div style="padding: 10px 8px 16px; border-bottom: 1px solid var(--border-color); margin-bottom: 10px;">
                 <h3 style="font-size: 16px; color: var(--accent-cyan);"><i class="fas fa-user-shield"></i> لوحة الأدمن الرئيسية</h3>
@@ -262,13 +304,14 @@
             </div>
             <button class="sidebar-btn active" onclick="switchTab('admin', 'adminStats', this)"><i class="fas fa-chart-line"></i> الإحصائيات العامة</button>
             <button class="sidebar-btn" onclick="switchTab('admin', 'adminServices', this)"><i class="fas fa-boxes"></i> إدارة الخدمات</button>
+            <button class="sidebar-btn" onclick="switchTab('admin', 'adminDeposits', this)"><i class="fas fa-wallet"></i> مراجعة الإيداعات</button>
             <button class="sidebar-btn" onclick="switchTab('admin', 'adminApi', this)"><i class="fas fa-plug"></i> ربط الـ API بالمزود</button>
             <button class="sidebar-btn" onclick="switchTab('admin', 'adminOrders', this)"><i class="fas fa-tasks"></i> كافة الطلبات</button>
             <button class="sidebar-btn" onclick="switchTab('admin', 'adminUsers', this)"><i class="fas fa-users"></i> المستخدِمين والوكلاء</button>
+            <button class="sidebar-btn" onclick="switchTab('admin', 'adminTickets', this)"><i class="fas fa-headset"></i> تذاكر الدعم</button>
             <button class="sidebar-btn" onclick="switchTab('admin', 'adminSiteSettings', this)"><i class="fas fa-sliders-h"></i> إعدادات الموقع</button>
         </aside>
 
-        <!-- Main Admin Content Area -->
         <main class="dashboard-content">
             <!-- Admin Stats Tab -->
             <div id="adminStats" class="tab-pane active">
@@ -278,22 +321,22 @@
                     <div class="stat-card">
                         <div class="stat-icon" style="background: rgba(0, 230, 118, 0.15); color: var(--accent-green);"><i class="fas fa-dollar-sign"></i></div>
                         <div class="stat-info">
-                            <h4>إجمالي مبيعات اليوم</h4>
-                            <strong>$1,420.50</strong>
+                            <h4>إجمالي المبيعات</h4>
+                            <strong id="adminTotalSales">$1,420.50</strong>
                         </div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon" style="background: rgba(0, 242, 254, 0.15); color: var(--accent-cyan);"><i class="fas fa-shopping-cart"></i></div>
                         <div class="stat-info">
-                            <h4>طلبات اليوم</h4>
-                            <strong>84 طلب</strong>
+                            <h4>إجمالي الطلبات</h4>
+                            <strong id="adminTotalOrdersCount">0 طلب</strong>
                         </div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-icon" style="background: rgba(255, 183, 3, 0.15); color: var(--accent-gold);"><i class="fas fa-users"></i></div>
                         <div class="stat-info">
                             <h4>إجمالي العملاء</h4>
-                            <strong>540 مستخدم</strong>
+                            <strong id="adminTotalUsersCount">0 مستخدم</strong>
                         </div>
                     </div>
                 </div>
@@ -322,7 +365,7 @@
             <div id="adminServices" class="tab-pane">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                     <h3 style="font-size: 20px; font-weight: 800;"><i class="fas fa-boxes" style="color: var(--accent-cyan);"></i> إدارة قوالب والخدمات</h3>
-                    <button class="btn-btn btn-primary" onclick="alert('فتح نموذج إضافة خدمة جديدة لموقع حاجاتي!')"><i class="fas fa-plus"></i> إضافة خدمة جديدة</button>
+                    <button class="btn-btn btn-primary" onclick="openAddServiceModal()"><i class="fas fa-plus-circle"></i> إضافة خدمة جديدة</button>
                 </div>
 
                 <div class="custom-table-wrapper">
@@ -334,10 +377,34 @@
                                 <th>القسم</th>
                                 <th>السعر الحالي</th>
                                 <th>الوقت</th>
-                                <th>التحكم</th>
+                                <th>التحكم والتعديل</th>
                             </tr>
                         </thead>
                         <tbody id="adminServicesTable">
+                            <!-- Dynamic -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Admin Deposits Management Tab -->
+            <div id="adminDeposits" class="tab-pane">
+                <h3 style="font-size: 20px; font-weight: 800; margin-bottom: 20px;"><i class="fas fa-wallet" style="color: var(--accent-cyan);"></i> إدارة ومراجعة طلبات شحن المحافظ</h3>
+                <div class="custom-table-wrapper">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th># الطلب</th>
+                                <th>اسم العميل</th>
+                                <th>البريد</th>
+                                <th>طريقة الدفع</th>
+                                <th>المبلغ</th>
+                                <th>رقم الإشعار</th>
+                                <th>الحالة</th>
+                                <th>تأكيد/رفض الإيداع</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminDepositsTable">
                             <!-- Dynamic -->
                         </tbody>
                     </table>
@@ -363,13 +430,13 @@
                             <input type="number" class="form-input" value="15" />
                         </div>
                         <div style="display: flex; gap: 10px;">
-                            <button class="btn-btn btn-primary" id="btnSaveApiConfig"><i class="fas fa-save"></i> حفظ</button>
-                            <button class="btn-btn btn-outline" id="btnSyncApi"><i class="fas fa-sync-alt"></i> مزامنة الآن</button>
+                            <button class="btn-btn btn-primary" id="btnSaveApiConfig"><i class="fas fa-save"></i> حفظ الإعدادات</button>
+                            <button class="btn-btn btn-outline" id="btnSyncApi"><i class="fas fa-sync-alt"></i> مزامنة كافة الخدمات</button>
                         </div>
                     </div>
 
                     <div style="background: rgba(11,15,25,0.6); padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
-                        <h4 style="font-size: 14px; margin-bottom: 12px; color: var(--accent-cyan);"><i class="fas fa-terminal"></i> سجل حركة واستجابات الـ API</h4>
+                        <h4 style="font-size: 14px; margin-bottom: 12px; color: var(--accent-cyan);"><i class="fas fa-terminal"></i> سجل حركة واستجابات الـ API الحية</h4>
                         <div class="log-console" id="apiLogConsole">
                             <!-- Live console output -->
                         </div>
@@ -390,7 +457,7 @@
                                 <th>بيانات الحساب</th>
                                 <th>السعر</th>
                                 <th>الحالة</th>
-                                <th>تحديث الحالة</th>
+                                <th>تحديث الحالة والقبول/الرفض</th>
                             </tr>
                         </thead>
                         <tbody id="adminAllOrdersTable">
@@ -412,10 +479,32 @@
                                 <th>البريد الإلكتروني</th>
                                 <th>رصيد المحفظة</th>
                                 <th>نوع الحساب</th>
-                                <th>الإجراء</th>
+                                <th>الإجراء وتغيير الرصيد</th>
                             </tr>
                         </thead>
                         <tbody id="adminUsersTable">
+                            <!-- Dynamic -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Admin Support Tickets Tab -->
+            <div id="adminTickets" class="tab-pane">
+                <h3 style="font-size: 20px; font-weight: 800; margin-bottom: 20px;"><i class="fas fa-headset" style="color: var(--accent-cyan);"></i> إدارة تذاكر الدعم والردود</h3>
+                <div class="custom-table-wrapper">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th># التذكرة</th>
+                                <th>العميل</th>
+                                <th>الموضوع</th>
+                                <th>الرسالة</th>
+                                <th>الحالة</th>
+                                <th>الرد على العميل</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminTicketsTable">
                             <!-- Dynamic -->
                         </tbody>
                     </table>
@@ -445,7 +534,94 @@
         </main>
     </div>
 
-    <!-- 4. AUTH MODAL (LOGIN / REGISTER WITH FIREBASE) -->
+    <!-- MODAL 1: ADD / EDIT SERVICE MODAL (ADMIN) -->
+    <div class="modal-overlay" id="serviceFormModal">
+        <div class="modal-box" style="max-width: 580px;">
+            <div class="modal-header">
+                <h3 class="modal-title" id="serviceModalTitle"><i class="fas fa-plus-circle" style="color: var(--accent-cyan);"></i> إضافة خدمة جديدة</h3>
+                <button class="btn-close">&times;</button>
+            </div>
+
+            <form id="serviceForm" onsubmit="handleSaveService(event)">
+                <input type="hidden" id="serviceFormId" value="" />
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label class="form-label">اسم الخدمة</label>
+                        <input type="text" id="serviceFormName" class="form-input" placeholder="مثال: ببجي موبايل - 325 شدة" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">القسم</label>
+                        <select id="serviceFormCategory" class="form-select" required>
+                            <option value="1">قسم شحن التطبيقات</option>
+                            <option value="2">قسم شحن الألعاب</option>
+                            <option value="4">قسم الدفع الإلكتروني</option>
+                            <option value="5">قسم المتاجر الرقمية</option>
+                            <option value="6">قسم شحن الخطوط</option>
+                            <option value="7">قسم تطبيقات المشاهدة</option>
+                            <option value="19">قسم تفعيل الأرقام</option>
+                            <option value="20">قسم الشام كاش والحوالات</option>
+                            <option value="37">قسم السوشل ميديا</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">الشارة / البادج (Badge)</label>
+                        <input type="text" id="serviceFormBadge" class="form-input" placeholder="مثال: فوري / الأكثر طلباً" value="حصري" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">السعر ($ USD)</label>
+                        <input type="number" step="0.01" id="serviceFormPrice" class="form-input" placeholder="10.00" required />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">السعر القديم (قبل الخصم)</label>
+                        <input type="number" step="0.01" id="serviceFormOldPrice" class="form-input" placeholder="12.00" />
+                    </div>
+
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label class="form-label">وقت التسليم المتوقع</label>
+                        <input type="text" id="serviceFormDelivery" class="form-input" placeholder="مثال: فوري تلقائي (1 - 5 دقائق)" value="فوري" required />
+                    </div>
+
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label class="form-label">رابط صورة الخدمة (Image URL)</label>
+                        <input type="url" id="serviceFormImage" class="form-input" placeholder="https://..." value="https://images.unsplash.com/photo-1542751371-adc38448a05e?w=500&auto=format&fit=crop&q=60" required />
+                    </div>
+
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label class="form-label">عنوان حقل إدخال العميل</label>
+                        <input type="text" id="serviceFormInputLabel" class="form-input" placeholder="مثال: معرّف اللاعب (Player ID)" value="معرّف الحساب / Player ID" required />
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-btn btn-primary" style="width: 100%; justify-content: center; padding: 12px; margin-top: 10px;">
+                    <i class="fas fa-check-circle"></i> حفظ ورخص الخدمة فوراً
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: ADMIN EDIT USER BALANCE MODAL -->
+    <div class="modal-overlay" id="editBalanceModal">
+        <div class="modal-box" style="max-width: 440px;">
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="fas fa-coins" style="color: var(--accent-gold);"></i> تعديل رصيد محفظة العميل</h3>
+                <button class="btn-close">&times;</button>
+            </div>
+            <div class="form-group">
+                <label class="form-label" id="editBalanceUserName">اسم العميل</label>
+                <input type="number" step="0.01" id="newBalanceInput" class="form-input" placeholder="أدخل الرصيد الجديد بالدولار..." required />
+            </div>
+            <button class="btn-btn btn-primary" onclick="confirmUpdateBalance()" style="width: 100%; justify-content: center;">
+                <i class="fas fa-save"></i> حفظ الرصيد الجديد
+            </button>
+        </div>
+    </div>
+
+    <!-- AUTH MODAL -->
     <div class="modal-overlay" id="authModal">
         <div class="modal-box" style="max-width: 440px;">
             <div class="modal-header">
@@ -453,7 +629,6 @@
                 <button class="btn-close">&times;</button>
             </div>
 
-            <!-- Toggle Auth Tabs -->
             <div style="display: flex; gap: 10px; background: rgba(11,15,25,0.6); padding: 4px; border-radius: var(--radius-md); margin-bottom: 18px;">
                 <button id="tabLoginBtn" class="btn-btn btn-primary" style="flex: 1; justify-content: center; padding: 8px;" onclick="switchAuthTab('login')">تسجيل الدخول</button>
                 <button id="tabRegisterBtn" class="btn-btn btn-outline" style="flex: 1; justify-content: center; padding: 8px;" onclick="switchAuthTab('register')">إنشاء حساب جديد</button>
@@ -486,7 +661,7 @@
         </div>
     </div>
 
-    <!-- Order Modal -->
+    <!-- ORDER MODAL -->
     <div class="modal-overlay" id="orderModal">
         <div class="modal-box">
             <div class="modal-header">
@@ -516,7 +691,7 @@
         </div>
     </div>
 
-    <!-- About Modal -->
+    <!-- ABOUT MODAL -->
     <div class="modal-overlay" id="aboutModal">
         <div class="modal-box">
             <div class="modal-header">
