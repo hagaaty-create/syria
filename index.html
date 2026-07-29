@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة حاجاتي الرقمية | HAGAATY - كل ما تحتاجه في مكان واحد</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@500;700;900&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDK (Compat version for vanilla JS) -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+    <!-- Custom Style -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Top Header Navbar -->
+    <header class="top-header">
+        <div class="header-container">
+            <a href="#" class="brand-logo" onclick="switchView('store')">
+                <div class="logo-icon">
+                    <i class="fas fa-box-open"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>منصة حاجاتي | HAGAATY</h1>
+                    <p>HAGAATY DIGITAL STORE 🩵</p>
+                </div>
+            </a>
+
+            <nav class="nav-links">
+                <a href="#" class="nav-link active" id="navStoreLink" onclick="switchView('store')"><i class="fas fa-store"></i> متجر حاجاتي</a>
+                <a href="#" class="nav-link" id="navUserLink" onclick="switchView('user')" style="display: none;"><i class="fas fa-user-circle"></i> لوحة المستخدم</a>
+                <a href="#" class="nav-link" id="navAdminLink" onclick="switchView('admin')" style="display: none; color: var(--accent-cyan);"><i class="fas fa-user-shield"></i> لوحة الأدمن</a>
+                <a href="#" class="nav-link" id="navAboutLink"><i class="fas fa-info-circle"></i> من نحن</a>
+            </nav>
+
+            <div class="user-actions">
+                <!-- User Balance Badge (Visible when logged in) -->
+                <div id="balanceBadge" style="display: none; background: rgba(0, 242, 254, 0.1); padding: 8px 14px; border-radius: var(--radius-full); border: 1px solid var(--border-glow); align-items: center; gap: 8px;">
+                    <i class="fas fa-wallet" style="color: var(--accent-cyan);"></i>
+                    <span style="font-size: 12px; color: var(--text-secondary);">المحفظة:</span>
+                    <strong id="userBalance" style="color: var(--accent-green); font-size: 14px;">$250.00</strong>
+                </div>
+
+                <!-- Guest Login Button -->
+                <button class="btn-btn btn-primary" id="loginBtnNav" onclick="openAuthModal()">
+                    <i class="fas fa-sign-in-alt"></i> سجل الآن / تسجيل الدخول
+                </button>
+
+                <!-- Logged User Info & Logout Button -->
+                <div id="userProfileArea" style="display: none; align-items: center; gap: 10px;">
+                    <span id="userAccountEmail" style="font-size: 13px; font-weight: 700; color: var(--accent-cyan); background: rgba(255,255,255,0.05); padding: 6px 12px; border-radius: var(--radius-full);"></span>
+                    <button class="btn-btn btn-outline" onclick="logoutUser()" style="padding: 8px 14px; font-size: 12px;">
+                        <i class="fas fa-sign-out-alt"></i> خروج
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- 1. MAIN STORE VIEW -->
+    <div id="storeView">
+        <section class="hero-banner">
+            <h1 class="hero-title">كل خدماتك الرقمية في مكان واحد الآن عبر منصة حاجاتي HAGAATY</h1>
+            <p class="hero-subtitle">ألعاب، تطبيق، بطاقات رقمية، تفعيل أرقام وهمية، دفع إلكتروني وحوالات بسرعة وتأمين فائق 🩵</p>
+            
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="searchInput" class="search-input" placeholder="ابحث عن أي خدمة في حاجاتي (ببجي، تيك توك، أرقام، بطاقات)..." />
+            </div>
+        </section>
+
+        <div class="categories-wrapper">
+            <div class="categories-grid" id="categoriesGrid">
+                <!-- Dynamic categories -->
+            </div>
+        </div>
+
+        <main class="main-container">
+            <div class="section-header">
+                <h2 class="section-title" id="sectionTitle"><i class="fas fa-th-large"></i> خدمات منصة حاجاتي HAGAATY</h2>
+                <span style="font-size: 13px; color: var(--text-secondary);"><i class="fas fa-bolt" style="color: var(--accent-gold);"></i> تنفيذ فوري وحصري</span>
+            </div>
+
+            <div class="services-grid" id="servicesGrid">
+                <!-- Dynamic service cards -->
+            </div>
+        </main>
+    </div>
+
+    <!-- 2. USER DASHBOARD VIEW -->
+    <div id="userView" class="dashboard-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar-menu">
+            <div style="padding: 10px 8px 16px; border-bottom: 1px solid var(--border-color); margin-bottom: 10px;">
+                <h3 style="font-size: 16px; color: #fff;"><i class="fas fa-user" style="color: var(--accent-cyan);"></i> بوابة المستخدم</h3>
+                <p style="font-size: 11px; color: var(--text-secondary);" id="userPortalEmailDisplay">user@hagaaty.com</p>
+            </div>
+            <button class="sidebar-btn active" onclick="switchTab('user', 'userSummary', this)"><i class="fas fa-home"></i> ملخص الحساب</button>
+            <button class="sidebar-btn" onclick="switchTab('user', 'userDeposit', this)"><i class="fas fa-wallet"></i> شحن المحفظة</button>
+            <button class="sidebar-btn" onclick="switchTab('user', 'userOrders', this)"><i class="fas fa-receipt"></i> سجل طلباتي</button>
+            <button class="sidebar-btn" onclick="switchTab('user', 'userTickets', this)"><i class="fas fa-headset"></i> التذاكر والدعم</button>
+            <button class="sidebar-btn" onclick="switchTab('user', 'userSettings', this)"><i class="fas fa-cog"></i> إعدادات الحساب</button>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="dashboard-content">
+            <!-- User Summary Tab -->
+            <div id="userSummary" class="tab-pane active">
+                <h3 style="font-size: 20px; font-weight: 800; margin-bottom: 20px;"><i class="fas fa-tachometer-alt" style="color: var(--accent-cyan);"></i> ملخص نشاطك في حاجاتي</h3>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(0, 242, 254, 0.15); color: var(--accent-cyan);"><i class="fas fa-coins"></i></div>
+                        <div class="stat-info">
+                            <h4>رصيد المحفظة</h4>
+                            <strong id="userPanelBalance">$250.00</strong>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(127, 83, 172, 0.15); color: var(--accent-purple);"><i class="fas fa-shopping-bag"></i></div>
+                        <div class="stat-info">
+                            <h4>إجمالي الطلبات</h4>
+                            <strong>14 طلب</strong>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(0, 230, 118, 0.15); color: var(--accent-green);"><i class="fas fa-check-circle"></i></div>
+                        <div class="stat-info">
+                            <h4>الطلبات المكتملة</h4>
+                            <strong>13 طلب</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <h4 style="font-size: 16px; margin: 24px 0 12px; color: #fff;">أحدث الطلبات المكتملة</h4>
+                <div class="custom-table-wrapper">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>رقم الطلب</th>
+                                <th>اسم الخدمة</th>
+                                <th>السعر</th>
+                                <th>التاريخ</th>
+                                <th>الحالة</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userRecentOrdersTable">
+                            <!-- Dynamic -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- User Deposit Tab -->
+            <div id="userDeposit" class="tab-pane">
+                <h3 style="font-size: 20px; font-weight: 800; margin-bottom: 12px;"><i class="fas fa-wallet" style="color: var(--accent-cyan);"></i> شحن محفظة HAGAATY</h3>
+                <p style="color: var(--text-secondary); font-size: 14px; margin-bottom: 20px;">اختر طريقة الدفع المناسبة لك لإضافة رصيد فوري إلى حسابك:</p>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px;">
+                    <div style="background: rgba(11,15,25,0.6); padding: 18px; border-radius: var(--radius-md); border: 1px solid var(--border-glow); text-align: center;">
+                        <i class="fas fa-money-bill-wave" style="font-size: 28px; color: var(--accent-green); margin-bottom: 8px;"></i>
+                        <h4 style="font-size: 15px;">الشام كاش / تحويل محلي</h4>
+                        <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">فوري ودون عمولات</p>
+                    </div>
+                    <div style="background: rgba(11,15,25,0.6); padding: 18px; border-radius: var(--radius-md); border: 1px solid var(--border-color); text-align: center;">
+                        <i class="fab fa-bitcoin" style="font-size: 28px; color: var(--accent-gold); margin-bottom: 8px;"></i>
+                        <h4 style="font-size: 15px;">USDT / العملات الرقمية</h4>
+                        <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">شبكة TRC-20</p>
+                    </div>
+                    <div style="background: rgba(11,15,25,0.6); padding: 18px; border-radius: var(--radius-md); border: 1px solid var(--border-color); text-align: center;">
+                        <i class="fas fa-credit-card" style="font-size: 28px; color: var(--accent-cyan); margin-bottom: 8px;"></i>
+                        <h4 style="font-size: 15px;">Paysera / MasterCard</h4>
+                        <p style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">بطاقة فيزا وماستركارد</p>
+                    </div>
+                </div>
+
+                <div style="background: rgba(11, 15, 25, 0.7); padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                    <div class="form-group">
+                        <label class="form-label">المبلغ المراد شحنه ($ USD)</label>
+                        <input type="number" id="depositAmount" class="form-input" placeholder="أدخل المبلغ بالدولار..." value="50" />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">رقم العملية / الحوالة</label>
+                        <input type="text" id="depositTxId" class="form-input" placeholder="أدخل رقم الإشعار أو Hash العملية..." />
+                    </div>
+                    <button class="btn-btn btn-primary" onclick="processUserDeposit()"><i class="fas fa-paper-plane"></i> إرسال طلب الشحن للمراجعة</button>
+                </div>
+            </div>
+
+            <!-- User Orders History Tab -->
+            <div id="userOrders" class="tab-pane">
+                <h3 style="font-size: 20px; font-weight: 800; margin-bottom: 20px;"><i class="fas fa-receipt" style="color: var(--accent-cyan);"></i> جميع طلباتي الكاملة</h3>
+                <div class="custom-table-wrapper">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th># المعرف</th>
+                                <th>الخدمة</th>
+                                <th>البيانات المدخلة</th>
+                                <th>السعر</th>
+                                <th>التاريخ</th>
+                                <th>الحالة</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userAllOrdersTable">
+                            <!-- Dynamic -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- User Support Tickets Tab -->
+            <div id="userTickets" class="tab-pane">
+                <h3 style="font-size: 20px; font-weight: 800; margin-bottom: 16px;"><i class="fas fa-headset" style="color: var(--accent-cyan);"></i> التذاكر والدعم الفني</h3>
+                <div style="background: rgba(11,15,25,0.7); padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 24px;">
+                    <h4 style="font-size: 15px; margin-bottom: 12px;">فتح تذكرة دعم جديدة</h4>
+                    <div class="form-group">
+                        <label class="form-label">عنوان التذكرة</label>
+                        <input type="text" class="form-input" placeholder="مثال: استفسار حول طلب #102..." />
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">تفاصيل المشكلة</label>
+                        <textarea class="form-textarea" rows="3" placeholder="اكتب تفاصيل التذكرة هنا..."></textarea>
+                    </div>
+                    <button class="btn-btn btn-primary" onclick="alert('تم فتح تذكرة الدعم بنجاح! سيتم الرد عليك في أقرب وقت.')"><i class="fas fa-plus"></i> إرسال التذكرة</button>
+                </div>
+            </div>
+
+            <!-- User Settings Tab -->
+            <div id="userSettings" class="tab-pane">
+                <h3 style="font-size: 20px; font-weight: 800; margin-bottom: 20px;"><i class="fas fa-cog" style="color: var(--accent-cyan);"></i> إعدادات الملف الشخصي</h3>
+                <div class="form-group">
+                    <label class="form-label">اسم المستخدِم</label>
+                    <input type="text" class="form-input" id="profileNameInput" value="عميل حاجاتي المميز" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">البريد الإلكتروني</label>
+                    <input type="email" class="form-input" id="profileEmailInput" value="user@hagaaty.com" readonly />
+                </div>
+                <button class="btn-btn btn-primary" onclick="alert('تم حفظ البيانات بنجاح!')"><i class="fas fa-save"></i> حفظ التغيرات</button>
+            </div>
+        </main>
+    </div>
+
+    <!-- 3. ADMIN DASHBOARD VIEW (ADMIN ONLY) -->
+    <div id="adminView" class="dashboard-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar-menu">
+            <div style="padding: 10px 8px 16px; border-bottom: 1px solid var(--border-color); margin-bottom: 10px;">
+                <h3 style="font-size: 16px; color: var(--accent-cyan);"><i class="fas fa-user-shield"></i> لوحة الأدمن الرئيسية</h3>
+                <p style="font-size: 11px; color: var(--accent-green);">مشرف النظام (admin@gmail.com)</p>
+            </div>
+            <button class="sidebar-btn active" onclick="switchTab('admin', 'adminStats', this)"><i class="fas fa-chart-line"></i> الإحصائيات العامة</button>
+            <button class="sidebar-btn" onclick="switchTab('admin', 'adminServices', this)"><i class="fas fa-boxes"></i> إدارة الخدمات</button>
+            <button class="sidebar-btn" onclick="switchTab('admin', 'adminApi', this)"><i class="fas fa-plug"></i> ربط الـ API بالمزود</button>
+            <button class="sidebar-btn" onclick="switchTab('admin', 'adminOrders', this)"><i class="fas fa-tasks"></i> كافة الطلبات</button>
+            <button class="sidebar-btn" onclick="switchTab('admin', 'adminUsers', this)"><i class="fas fa-users"></i> المستخدِمين والوكلاء</button>
+            <button class="sidebar-btn" onclick="switchTab('admin', 'adminSiteSettings', this)"><i class="fas fa-sliders-h"></i> إعدادات الموقع</button>
+        </aside>
+
+        <!-- Main Admin Content Area -->
+        <main class="dashboard-content">
+            <!-- Admin Stats Tab -->
+            <div id="adminStats" class="tab-pane active">
+                <h3 style="font-size: 20px; font-weight: 800; margin-bottom: 20px;"><i class="fas fa-chart-pie" style="color: var(--accent-cyan);"></i> إحصائيات متجر حاجاتي الشاملة</h3>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(0, 230, 118, 0.15); color: var(--accent-green);"><i class="fas fa-dollar-sign"></i></div>
+                        <div class="stat-info">
+                            <h4>إجمالي مبيعات اليوم</h4>
+                            <strong>$1,420.50</strong>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(0, 242, 254, 0.15); color: var(--accent-cyan);"><i class="fas fa-shopping-cart"></i></div>
+                        <div class="stat-info">
+                            <h4>طلبات اليوم</h4>
+                            <strong>84 طلب</strong>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon" style="background: rgba(255, 183, 3, 0.15); color: var(--accent-gold);"><i class="fas fa-users"></i></div>
+                        <div class="stat-info">
+                            <h4>إجمالي العملاء</h4>
+                            <strong>540 مستخدم</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <h4 style="font-size: 16px; margin: 24px 0 12px; color: #fff;">آخر الطلبات التي تحتاج مراجعة أو أتمتة</h4>
+                <div class="custom-table-wrapper">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th># الطلب</th>
+                                <th>اسم العميل</th>
+                                <th>الخدمة</th>
+                                <th>السعر</th>
+                                <th>الحالة</th>
+                                <th>الإجراء</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminStatsOrdersTable">
+                            <!-- Dynamic -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Admin Services Management Tab -->
+            <div id="adminServices" class="tab-pane">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h3 style="font-size: 20px; font-weight: 800;"><i class="fas fa-boxes" style="color: var(--accent-cyan);"></i> إدارة قوالب والخدمات</h3>
+                    <button class="btn-btn btn-primary" onclick="alert('فتح نموذج إضافة خدمة جديدة لموقع حاجاتي!')"><i class="fas fa-plus"></i> إضافة خدمة جديدة</button>
+                </div>
+
+                <div class="custom-table-wrapper">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>المعرف</th>
+                                <th>الخدمة</th>
+                                <th>القسم</th>
+                                <th>السعر الحالي</th>
+                                <th>الوقت</th>
+                                <th>التحكم</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminServicesTable">
+                            <!-- Dynamic -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Admin API Settings Tab -->
+            <div id="adminApi" class="tab-pane">
+                <h3 style="font-size: 20px; font-weight: 800; margin-bottom: 20px;"><i class="fas fa-plug" style="color: var(--accent-cyan);"></i> إعدادات الربط المباشر مع المزود alragheb-store.com</h3>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                    <div style="background: rgba(11,15,25,0.6); padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                        <div class="form-group">
+                            <label class="form-label">رابط سيرفر API المزود الرئيسي</label>
+                            <input type="text" id="apiEndpoint" class="form-input" value="https://alragheb-store.com/api/v2" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">مفتاح API Key الخاص بحسابك</label>
+                            <input type="password" id="apiKeyInput" class="form-input" value="hagaaty_sec_key_77889900112233" />
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">نسبة الربح التلقائية لموقع حاجاتي (%)</label>
+                            <input type="number" class="form-input" value="15" />
+                        </div>
+                        <div style="display: flex; gap: 10px;">
+                            <button class="btn-btn btn-primary" id="btnSaveApiConfig"><i class="fas fa-save"></i> حفظ</button>
+                            <button class="btn-btn btn-outline" id="btnSyncApi"><i class="fas fa-sync-alt"></i> مزامنة الآن</button>
+                        </div>
+                    </div>
+
+                    <div style="background: rgba(11,15,25,0.6); padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                        <h4 style="font-size: 14px; margin-bottom: 12px; color: var(--accent-cyan);"><i class="fas fa-terminal"></i> سجل حركة واستجابات الـ API</h4>
+                        <div class="log-console" id="apiLogConsole">
+                            <!-- Live console output -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin Orders Management Tab -->
+            <div id="adminOrders" class="tab-pane">
+                <h3 style="font-size: 20px; font-weight: 800; margin-bottom: 20px;"><i class="fas fa-tasks" style="color: var(--accent-cyan);"></i> سجل ومتابعة طلبات العملاء</h3>
+                <div class="custom-table-wrapper">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th># الطلب</th>
+                                <th>اسم العميل</th>
+                                <th>تفاصيل الخدمة</th>
+                                <th>بيانات الحساب</th>
+                                <th>السعر</th>
+                                <th>الحالة</th>
+                                <th>تحديث الحالة</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminAllOrdersTable">
+                            <!-- Dynamic -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Admin Users & Resellers Management Tab -->
+            <div id="adminUsers" class="tab-pane">
+                <h3 style="font-size: 20px; font-weight: 800; margin-bottom: 20px;"><i class="fas fa-users" style="color: var(--accent-cyan);"></i> إدارة المستخدِمين والوكلاء</h3>
+                <div class="custom-table-wrapper">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th># المعرف</th>
+                                <th>الاسم</th>
+                                <th>البريد الإلكتروني</th>
+                                <th>رصيد المحفظة</th>
+                                <th>نوع الحساب</th>
+                                <th>الإجراء</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminUsersTable">
+                            <!-- Dynamic -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Admin General Site Settings Tab -->
+            <div id="adminSiteSettings" class="tab-pane">
+                <h3 style="font-size: 20px; font-weight: 800; margin-bottom: 20px;"><i class="fas fa-sliders-h" style="color: var(--accent-cyan);"></i> إعدادات منصة حاجاتي العامة</h3>
+                <div class="form-group">
+                    <label class="form-label">اسم المتجر / المنصة</label>
+                    <input type="text" class="form-input" value="منصة حاجاتي | HAGAATY" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">رقم الدعم الفني على الواتساب</label>
+                    <input type="text" class="form-input" value="+963983066599" />
+                </div>
+                <div class="form-group">
+                    <label class="form-label">وضع الصيانة (Maintenance Mode)</label>
+                    <select class="form-select">
+                        <option value="off" selected>معطل (الموقع يعمل بشكل طبيعي)</option>
+                        <option value="on">مفعل (وضع الصيانة المؤقت)</option>
+                    </select>
+                </div>
+                <button class="btn-btn btn-primary" onclick="alert('تم حفظ إعدادات موقع حاجاتي بنجاح!')"><i class="fas fa-save"></i> حفظ الإعدادات العامة</button>
+            </div>
+        </main>
+    </div>
+
+    <!-- 4. AUTH MODAL (LOGIN / REGISTER WITH FIREBASE) -->
+    <div class="modal-overlay" id="authModal">
+        <div class="modal-box" style="max-width: 440px;">
+            <div class="modal-header">
+                <h3 class="modal-title" id="authModalTitle"><i class="fas fa-lock" style="color: var(--accent-cyan);"></i> تسجيل الدخول لحسابك</h3>
+                <button class="btn-close">&times;</button>
+            </div>
+
+            <!-- Toggle Auth Tabs -->
+            <div style="display: flex; gap: 10px; background: rgba(11,15,25,0.6); padding: 4px; border-radius: var(--radius-md); margin-bottom: 18px;">
+                <button id="tabLoginBtn" class="btn-btn btn-primary" style="flex: 1; justify-content: center; padding: 8px;" onclick="switchAuthTab('login')">تسجيل الدخول</button>
+                <button id="tabRegisterBtn" class="btn-btn btn-outline" style="flex: 1; justify-content: center; padding: 8px;" onclick="switchAuthTab('register')">إنشاء حساب جديد</button>
+            </div>
+
+            <div style="background: rgba(0, 242, 254, 0.08); padding: 10px 14px; border-radius: var(--radius-md); border: 1px dashed var(--border-glow); font-size: 12px; margin-bottom: 16px; color: var(--text-secondary);">
+                <i class="fas fa-shield-alt" style="color: var(--accent-cyan);"></i> <strong>تنويه الإدارة:</strong> للوصول للوحة الأدمن استخدم البريد: <span style="color: var(--accent-cyan); font-weight: 800;">admin@gmail.com</span>
+            </div>
+
+            <form id="authForm" onsubmit="handleAuthSubmit(event)">
+                <div class="form-group" id="fullNameGroup" style="display: none;">
+                    <label class="form-label">الاسم الكامل</label>
+                    <input type="text" id="authFullName" class="form-input" placeholder="أدخل اسمك الكامل..." />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">البريد الإلكتروني (Email)</label>
+                    <input type="email" id="authEmail" class="form-input" placeholder="admin@gmail.com أو بريدك الخاص..." required value="admin@gmail.com" />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">كلمة السر (Password)</label>
+                    <input type="password" id="authPassword" class="form-input" placeholder="••••••••" required value="123456" />
+                </div>
+
+                <button type="submit" id="authSubmitBtn" class="btn-btn btn-primary" style="width: 100%; justify-content: center; padding: 12px;">
+                    <i class="fas fa-sign-in-alt"></i> الدخول الآن
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Order Modal -->
+    <div class="modal-overlay" id="orderModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalServiceName">اسم الخدمة</h3>
+                <button class="btn-close">&times;</button>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label" id="modalInputLabel">بيانات الحساب / الرقم</label>
+                <input type="text" id="modalInput" class="form-input" placeholder="أدخل البيانات المطلوبة..." />
+            </div>
+
+            <div style="background: rgba(255,255,255,0.03); padding: 14px; border-radius: var(--radius-md); margin-bottom: 20px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 13px; color: var(--text-secondary);">
+                    <span>وقت التسليم المتوقع:</span>
+                    <strong id="modalDelivery" style="color: #fff;">فوري</strong>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 15px; font-weight: 800;">
+                    <span>إجمالي المبلغ:</span>
+                    <strong id="modalPrice" style="color: var(--accent-green); font-size: 18px;">$0.00</strong>
+                </div>
+            </div>
+
+            <button class="btn-btn btn-primary" id="confirmOrderBtn" style="width: 100%; justify-content: center; padding: 14px;">
+                <i class="fas fa-check-circle"></i> تأكيد الشراء من HAGAATY
+            </button>
+        </div>
+    </div>
+
+    <!-- About Modal -->
+    <div class="modal-overlay" id="aboutModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 class="modal-title"><i class="fas fa-info-circle" style="color: var(--accent-cyan);"></i> من نحن - منصة حاجاتي HAGAATY</h3>
+                <button class="btn-close">&times;</button>
+            </div>
+            <div style="color: var(--text-secondary); line-height: 1.8; font-size: 14px;">
+                <p style="margin-bottom: 12px;"><strong style="color: #fff;">منصة حاجاتي (HAGAATY DIGITAL)</strong> هي وجهتك الاحترافية الشاملة لتقديم وإدارة كافة الخدمات الرقمية، شحن الألعاب، اشتراكات المشاهدة، وتفعيل الأرقام والحوالات الإلكترونية بسرعة وأمان تام.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Support -->
+    <a href="https://wa.me/963983066599" target="_blank" class="floating-whatsapp" title="دعم منصة حاجاتي HAGAATY">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+    <!-- Scripts -->
+    <script src="firebase-config.js"></script>
+    <script src="services-data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+# Node dependencies
+node_modules/
+
+# Environment & Config
+.env
+.env.local
+
+# Vercel & IDE
+.vercel
+.vscode/
+.idea/
+*.log

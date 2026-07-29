@@ -1,0 +1,8 @@
+{
+  "version": 2,
+  "name": "hagaaty-digital-store",
+  "cleanUrls": true,
+  "routes": [
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
+}
