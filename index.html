@@ -48,7 +48,7 @@
                 <div id="balanceBadge" style="display: none; background: rgba(0, 242, 254, 0.1); padding: 8px 14px; border-radius: var(--radius-full); border: 1px solid var(--border-glow); align-items: center; gap: 8px;">
                     <i class="fas fa-wallet" style="color: var(--accent-cyan);"></i>
                     <span style="font-size: 12px; color: var(--text-secondary);">المحفظة:</span>
-                    <strong id="userBalance" style="color: var(--accent-green); font-size: 14px;">$250.00</strong>
+                    <strong id="userBalance" style="color: var(--accent-green); font-size: 14px;">$0.00</strong>
                 </div>
 
                 <!-- Guest Login Button -->
@@ -121,7 +121,7 @@
                         <div class="stat-icon" style="background: rgba(0, 242, 254, 0.15); color: var(--accent-cyan);"><i class="fas fa-coins"></i></div>
                         <div class="stat-info">
                             <h4>رصيد المحفظة</h4>
-                            <strong id="userPanelBalance">$250.00</strong>
+                            <strong id="userPanelBalance">$0.00</strong>
                         </div>
                     </div>
                     <div class="stat-card">
@@ -284,7 +284,7 @@
                 <h3 style="font-size: 20px; font-weight: 800; margin-bottom: 20px;"><i class="fas fa-cog" style="color: var(--accent-cyan);"></i> إعدادات الملف الشخصي</h3>
                 <div class="form-group">
                     <label class="form-label">اسم المستخدِم</label>
-                    <input type="text" class="form-input" id="profileNameInput" value="عميل حاجاتي المميز" />
+                    <input type="text" class="form-input" id="profileNameInput" value="عميل حاجاتي" />
                 </div>
                 <div class="form-group">
                     <label class="form-label">البريد الإلكتروني</label>
@@ -322,7 +322,7 @@
                         <div class="stat-icon" style="background: rgba(0, 230, 118, 0.15); color: var(--accent-green);"><i class="fas fa-dollar-sign"></i></div>
                         <div class="stat-info">
                             <h4>إجمالي المبيعات</h4>
-                            <strong id="adminTotalSales">$1,420.50</strong>
+                            <strong id="adminTotalSales">$0.00</strong>
                         </div>
                     </div>
                     <div class="stat-card">
@@ -418,16 +418,16 @@
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
                     <div style="background: rgba(11,15,25,0.6); padding: 20px; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
                         <div class="form-group">
-                            <label class="form-label">رابط سيرفر API المزود الرئيسي</label>
+                            <label class="form-label">رابط سيرفر API المزود الرئيسي (API Endpoint)</label>
                             <input type="text" id="apiEndpoint" class="form-input" value="https://alragheb-store.com/api/v2" />
                         </div>
                         <div class="form-group">
-                            <label class="form-label">مفتاح API Key الخاص بحسابك</label>
-                            <input type="password" id="apiKeyInput" class="form-input" value="hagaaty_sec_key_77889900112233" />
+                            <label class="form-label">مفتاح API Key الخاص بحسابك عند المزود</label>
+                            <input type="password" id="apiKeyInput" class="form-input" placeholder="أدخل API Key الخاص بك هنا..." value="" />
                         </div>
                         <div class="form-group">
                             <label class="form-label">نسبة الربح التلقائية لموقع حاجاتي (%)</label>
-                            <input type="number" class="form-input" value="15" />
+                            <input type="number" id="apiProfitMargin" class="form-input" value="15" />
                         </div>
                         <div style="display: flex; gap: 10px;">
                             <button class="btn-btn btn-primary" id="btnSaveApiConfig"><i class="fas fa-save"></i> حفظ الإعدادات</button>
@@ -621,7 +621,7 @@
         </div>
     </div>
 
-    <!-- AUTH MODAL -->
+    <!-- AUTH MODAL (CLEANED PRODUCTION VERSION) -->
     <div class="modal-overlay" id="authModal">
         <div class="modal-box" style="max-width: 440px;">
             <div class="modal-header">
@@ -634,10 +634,6 @@
                 <button id="tabRegisterBtn" class="btn-btn btn-outline" style="flex: 1; justify-content: center; padding: 8px;" onclick="switchAuthTab('register')">إنشاء حساب جديد</button>
             </div>
 
-            <div style="background: rgba(0, 242, 254, 0.08); padding: 10px 14px; border-radius: var(--radius-md); border: 1px dashed var(--border-glow); font-size: 12px; margin-bottom: 16px; color: var(--text-secondary);">
-                <i class="fas fa-shield-alt" style="color: var(--accent-cyan);"></i> <strong>تنويه الإدارة:</strong> للوصول للوحة الأدمن استخدم البريد: <span style="color: var(--accent-cyan); font-weight: 800;">admin@gmail.com</span>
-            </div>
-
             <form id="authForm" onsubmit="handleAuthSubmit(event)">
                 <div class="form-group" id="fullNameGroup" style="display: none;">
                     <label class="form-label">الاسم الكامل</label>
@@ -646,12 +642,12 @@
 
                 <div class="form-group">
                     <label class="form-label">البريد الإلكتروني (Email)</label>
-                    <input type="email" id="authEmail" class="form-input" placeholder="admin@gmail.com أو بريدك الخاص..." required value="admin@gmail.com" />
+                    <input type="email" id="authEmail" class="form-input" placeholder="بريدك الإلكتروني..." required value="" />
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">كلمة السر (Password)</label>
-                    <input type="password" id="authPassword" class="form-input" placeholder="••••••••" required value="123456" />
+                    <input type="password" id="authPassword" class="form-input" placeholder="••••••••" required value="" />
                 </div>
 
                 <button type="submit" id="authSubmitBtn" class="btn-btn btn-primary" style="width: 100%; justify-content: center; padding: 12px;">
